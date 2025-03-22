@@ -46,7 +46,8 @@ const DEV_PROMPT = `
 You are to respond to the user's request by playing the sound effect that they request via a tool call. 
 If no sound effect is requested or the sound effect is not available, respond with "No effect chosen" or "I don't have access to {sound name}".
 `.trim();
-
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 const tools: never = [
   {
     type: 'function',

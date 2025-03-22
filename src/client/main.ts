@@ -9,6 +9,7 @@ document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
       <input type="text" id="user-input" placeholder="Describe a scene" required />
       <button type="submit">Send</button>
       <button type="button" id="tts-toggle">Disable TTS</button>
+      <button type="button" id="mic-toggle">Enable Mic</button>
     </form>
     <div id="messages"></div>
   </div>
@@ -19,8 +20,10 @@ const chatForm = document.querySelector<HTMLFormElement>('#chat-form')!;
 const userInput = document.querySelector<HTMLInputElement>('#user-input')!;
 const messagesDiv = document.querySelector<HTMLDivElement>('#messages')!;
 const ttsToggleButton = document.querySelector<HTMLButtonElement>('#tts-toggle')!;
+const micToggleButton = document.querySelector<HTMLButtonElement>('#mic-toggle')!;
 
 let ttsEnabled = true;
+let micEnabled = false;
 
 ttsToggleButton.addEventListener('click', (event) => {
   event.preventDefault();
@@ -28,6 +31,36 @@ ttsToggleButton.addEventListener('click', (event) => {
   ttsToggleButton.style.backgroundColor = ttsEnabled ? '#7faf79' : 'red';
   ttsToggleButton.innerHTML = ttsEnabled ? 'Disable TTS' : 'Enable TTS';
   console.log('TTS toggle button clicked');
+});
+
+micToggleButton.addEventListener('click', (event) => {
+  event.preventDefault();
+  micEnabled = !micEnabled;
+  micToggleButton.style.backgroundColor = micEnabled ? 'red' : '#7faf79';
+  micToggleButton.innerHTML = micEnabled ? 'Disable Mic' : 'Enable Mic';
+  console.log('Mic toggle button clicked');
+
+  if (micEnabled) {
+    const recognition = new window.webkitSpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.start();
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const result = event.results[event.results.length - 1];
+      const transcript = result[0].transcript;
+      console.log('Mic transcript:', transcript);
+      userInput.value = transcript;
+
+      if (result.isFinal) {
+        chatForm.dispatchEvent(new Event('submit'));
+        micEnabled = !micEnabled;
+        micToggleButton.style.backgroundColor = micEnabled ? 'red' : '#7faf79';
+        micToggleButton.innerHTML = micEnabled ? 'Disable Mic' : 'Enable Mic';
+      }
+    };
+  }
 });
 
 chatForm.addEventListener('submit', async (event) => {
